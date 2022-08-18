@@ -1,0 +1,9 @@
+databaseVolume:
+  persistentVolumeClaimName: postgresql-pvc
+  storageRequest: 2Gi
+  storageClassName: longhorn
+
+repositoriesVolume:
+  persistentVolumeClaimName: repositories-pvc
+  storageRequest: 5Gi
+  storageClassName: local-path

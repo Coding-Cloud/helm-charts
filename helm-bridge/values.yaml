@@ -1,0 +1,44 @@
+replicaCount: 1
+masterName: kube-master
+
+image:
+  repository: rg.fr-par.scw.cloud/cloudcoding/helm-bridge
+  tag: latest
+  pullPolicy: Always
+
+ingress:
+  enabled: false
+  class: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  tls:
+    secretName: code-runner-tls
+  host: helm-bridge.cloudcoding.fr
+
+env:
+  REPOSITORIES_PATH: ''
+  API_URL: ''
+  VALUES_PATH: ''
+  CODE_RUNNER_PATH: /home/infra/code-runner
+
+service:
+  type: ClusterIP
+  port: 5000
+  protocol: TCP
+
+repositoriesVolume:
+  mountPath: /data
+  volumeName: repositories-volume
+  hostPath: /root/repositories
+
+
+infraVolume:
+  mountPath: /home/infra
+  volumeName: infra-volume
+  hostPath: /root/kubernetes/infra
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi

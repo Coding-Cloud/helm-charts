@@ -1,0 +1,26 @@
+replicaCount: 1
+namespace: kube-system
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "60Mi"
+
+image:
+  repository: ghcr.io/skooner-k8s/skooner
+  tag: stable
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 4654
+  protocol: TCP
+
+ingress:
+  class: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd #,default-basic-auth@kubernetescrd
+  tls:
+    secretName: snooker-tls
+  host: monitoring.cloudcoding.fr

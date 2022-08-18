@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.project.id }}-{{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.project.id }}-{{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.project.id }}-{{ .Chart.Name }}
+    spec:
+      nodeName: {{ .Values.masterName }}
+      runtimeClassName: gvisor
+      containers:
+        - name: {{ .Values.project.id }}-{{ .Chart.Name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PROJECT_ID
+              value: {{ .Values.project.id }}
+            - name: "PUBLIC_URL"
+              value: {{.Values.project.id}}{{- if .Values.project.id }}.{{- end -}}{{ .Values.ingress.host }}
+            {{- range $key, $value := $.Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /home/app
+              name: repository
+              subPath: {{ .Values.project.id }}
+            {{- if .Values.pruneVolume.should_prune_path }}
+            - mountPath: {{.Values.pruneVolume.mountPath}}
+              name: {{.Values.pruneVolume.volumeName}}
+            {{- end }}
+            {{- if .Values.librariesVolume.has_local_libs }}
+            - mountPath: {{.Values.librariesVolume.mountPath}}
+              name: {{.Values.librariesVolume.volumeName}}
+              subPath: {{.Values.librariesVolume.subPath}}
+            {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+      volumes:
+        - name: repository
+          hostPath:
+            path: {{ .Values.repositoriesVolume.hostPath }}
+        {{- if .Values.pruneVolume.should_prune_path }}
+        - persistentVolumeClaim:
+            claimName: {{.Values.project.id}}-{{.Values.pruneVolume.persistentVolumeClaimName}}
+          name: {{.Values.pruneVolume.volumeName}}
+        {{- end }}
+        {{- if .Values.librariesVolume.has_local_libs }}
+        - name: {{ .Values.librariesVolume.volumeName }}
+          hostPath:
+            path: {{ .Values.librariesVolume.hostPath }}
+        {{- end }}

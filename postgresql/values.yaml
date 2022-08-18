@@ -1,0 +1,30 @@
+replicaCount: 1
+
+nodeName: kube-master
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "50Mi"
+
+image:
+  repository: postgres
+  tag: 14-alpine
+  pullPolicy: Always
+
+env:
+  POSTGRES_USER: ''
+  POSTGRES_PASSWORD: ''
+  POSTGRES_DB: ''
+
+service:
+  type: NodePort
+  port: 5432
+  nodePort: 30000 # Optional
+
+volume:
+  mountPath: /var/lib/postgresql/data
+  volumeName: postgresql-volume
+  hostPath: /root/database
+
+

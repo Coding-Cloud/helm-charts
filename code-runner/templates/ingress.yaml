@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.project.id }}-{{ .Chart.Name }}-ingress
+  labels:
+    name: {{ .Values.project.id }}-{{ .Chart.Name }}-ingress
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+spec:
+  tls:
+    - secretName: {{.Values.project.id}}{{- if .Values.project.id }}-{{- end -}}{{ .Values.ingress.tls.secretName }}
+      hosts:
+        - {{.Values.project.id}}{{- if .Values.project.id }}.{{- end -}}{{ .Values.ingress.host }}
+  rules:
+    - host: {{ .Values.project.id }}{{- if .Values.project.id }}.{{- end -}}{{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.project.id }}-{{ .Chart.Name }}
+                port:
+                  number: {{ .Values.service.port }}

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  annotations:
+    keel.sh/match-tag: 'true'
+    keel.sh/policy: force
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      nodeName: {{ .Values.masterName }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            runAsUser: {{ .Values.security.runAsUser }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: {{ .Values.repositoriesVolume.mountPath}}
+              name: {{ .Values.repositoriesVolume.volumeName }}
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.service.port}}
+      volumes:
+        - name: {{ .Values.repositoriesVolume.volumeName }}
+          hostPath:
+            path: {{ .Values.repositoriesVolume.hostPath }}

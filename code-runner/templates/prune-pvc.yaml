@@ -1,0 +1,13 @@
+{{- if .Values.pruneVolume.should_prune_path }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{.Values.project.id}}-prune-pvc
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+{{- end }}

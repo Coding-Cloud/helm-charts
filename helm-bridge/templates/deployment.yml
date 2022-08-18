@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  annotations:
+    keel.sh/match-tag: 'true'
+    keel.sh/policy: force
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      nodeName: {{ .Values.masterName }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: {{ .Values.repositoriesVolume.mountPath}}
+              name: {{ .Values.repositoriesVolume.volumeName }}
+            - mountPath: {{ .Values.infraVolume.mountPath}}
+              name: {{ .Values.infraVolume.volumeName }}
+            - mountPath: /root/.kube
+              name: kube
+            - mountPath: /root/.config/helm
+              name: helm-config
+            - mountPath: /root/.cache/helm
+              name: helm-cache
+            - mountPath: /root/.helm
+              name: helm
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.service.port}}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+
+      volumes:
+        - name: {{ .Values.repositoriesVolume.volumeName }}
+          hostPath:
+            path: {{ .Values.repositoriesVolume.hostPath }}
+        - name: {{ .Values.infraVolume.volumeName }}
+          hostPath:
+            path: {{  .Values.infraVolume.hostPath }}
+        - name: kube
+          hostPath:
+            path: /root/.kube-public
+        - name: helm-cache
+          hostPath:
+            path: /root/.cache/helm
+        - name: helm-config
+          hostPath:
+            path: /root/.config/helm
+        - name: helm
+          hostPath:
+            path: /root/.helm

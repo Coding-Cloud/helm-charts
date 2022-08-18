@@ -1,0 +1,3 @@
+{{ upper .Chart.Name }} is deployed
+
+Domain is :  {{.Values.project.id}}{{- if .Values.project.id }}.{{- end -}}{{ .Values.ingress.host }}

@@ -1,0 +1,7 @@
+{{ upper .Chart.Name }} is deployed on namespace {{ .Values.namespace }}
+
+Container / ClusterIP port : {{ .Values.service.port }}
+
+{{- if eq .Values.service.type "NodePort" }}
+NodePort port : {{ .Values.service.nodePort }}
+{{ end }}

@@ -1,0 +1,32 @@
+replicaCount: 1
+minReplicas: 1
+maxReplicas: 3
+
+image:
+  repository: rg.fr-par.scw.cloud/cloudcoding/cloudcoding-angular-app
+  tag: latest
+  pullPolicy: Always
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 20Mi
+  limits:
+      cpu: 100m
+      memory: 40Mi
+
+service:
+  type: ClusterIP
+  port: 80
+  protocol: TCP
+
+ingress:
+  class: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  tls:
+    secretName: angular-frontend-tls
+  host: cloudcoding.fr
+
+

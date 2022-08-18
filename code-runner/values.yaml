@@ -1,0 +1,48 @@
+replicaCount: 1
+masterName: kube-master
+image:
+  repository: code-runner
+  pullPolicy: Always
+  tag: ""
+
+project:
+  id: ""
+  language: ""
+
+env:
+  HOST: ""
+
+service:
+  type: ClusterIP
+  port:
+  apiPort: 8181
+
+ingress:
+  class: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  tls:
+    secretName: code-runner-tls
+  host: cloudcoding.fr
+
+librariesVolume:
+  has_local_libs: false
+  volumeName: libraries-pvc
+  hostPath: /root/libs/
+  mountPath: ""
+  subPath: ""
+
+pruneVolume:
+  should_prune_path: false
+  volumeName: prune-pvc
+  persistentVolumeClaimName: prune-pvc
+  mountPath: ""
+
+resources:
+  requests:
+    cpu: ""
+    memory: ""
+
+repositoriesVolume:
+  hostPath: /root/repositories

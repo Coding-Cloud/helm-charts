@@ -1,0 +1,53 @@
+replicaCount: 1
+minReplicas: 1
+maxReplicas: 2
+masterName: kube-master
+
+image:
+  repository: rg.fr-par.scw.cloud/cloudcoding/cloudcoding-api
+  tag: latest
+  pullPolicy: Always
+
+security:
+  runAsUser: 0
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 150Mi
+
+service:
+  type: ClusterIP
+  port: 3000
+  protocol: TCP
+
+env:
+  DATABASE_HOST: postgresql.cloudcoding-prod.svc.cluster.local
+  DATABASE_PORT: 5432
+  DATABASE_USER: cloudcoding
+  DATABASE_PASSWORD: cloudcoding
+  DATABASE_NAME: cloudcoding
+  JWT_SECRET: mysecret
+  SMTP_APIKEY_PUBLIC: publickey
+  SMTP_APIKEY_PRIVATE: privatekey
+  MAIL_SENDER: example@mail.com
+  MAIL_SENDER_NAME: CloudCoding
+  MAIL_RECEIVER: example@mail.com
+  FRONT_URL: http://localhost
+  FRONT_PORT: 4200
+  HELM_BRIDGE_URL: http://helm-bridge.default.svc.cluster.local:5000
+
+ingress:
+  class: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  tls:
+    secretName: nest-backend-tls
+  host: api.cloudcoding.fr
+
+repositoriesVolume:
+  mountPath: /data
+  volumeName: repositories-volume
+  persistentVolumeClaimName: repositories-pvc
+  hostPath: /root/repositories
